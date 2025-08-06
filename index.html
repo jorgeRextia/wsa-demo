@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>UPS Shipment Tracking</title>
+	<link rel="stylesheet" href="css/styles.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+	<div class="container">
+		<h2>UPS Shipment Tracking</h2>
+
+		<!-- Search by ID -->
+		<label for="trackingId">Tracking ID:</label>
+		<input type="text" id="trackingId" placeholder="Enter your tracking number" />
+		<button id="btnBuscarID">Search by ID</button>
+
+		<!-- Multiple Results by ID -->
+		<div id="resultadosMultiples" class="results-container"></div>
+
+		<hr />
+
+		<!-- Search by Dates -->
+		<label for="startDate">Start Date:</label>
+		<input type="date" id="startDate" />
+		<label for="endDate">End Date:</label>
+		<input type="date" id="endDate" />
+		<button id="btnBuscarFechas">Search by Dates</button>
+
+		<!-- Individual Result by ID -->
+		<div class="result" id="resultado">
+			<h3>Search Result by ID</h3>
+			<p><strong>IdTracking:</strong> <span id="resId"></span></p>
+			<p><strong>Required ETA:</strong> <span id="resEtaRequerida"></span></p>
+			<p><strong>Status:</strong> <span id="resEstado"></span></p>
+			<p><strong>Location:</strong> <span id="resUbicacion"></span></p>
+			<p><strong>Arrival Date:</strong> <span id="resFechaLlegada"></span></p>
+			<p><strong>Real ETA:</strong> <span id="resEtaReal"></span></p>
+			<p><strong>Date:</strong> <span id="resFecha"></span></p>
+			<p><strong>Hour:</strong> <span id="resHora"></span></p>
+			<p><strong>Delay Days:</strong> <span id="resDiasRetraso"></span></p>
+			<button id="btnGuardar" class="btn-save">Save</button>
+		</div>
+
+		<!-- Results by Date -->
+		<div id="tablaResultados" class="table-container">
+			<h3>Search Results</h3>
+
+			<!-- Status Filter -->
+			<label for="filtroEstado">Filter by status:</label>
+			<select id="filtroEstado"></select>
+
+			<p id="contadorResultados" style="display: none;"></p>
+
+			<div class="table-responsive">
+				<table>
+					<thead>
+						<tr>
+							<th>IdTracking</th>
+							<th>Required ETA</th>
+							<th>Status</th>
+							<th>Location</th>
+							<th>Arrival Date</th>
+							<th>Date</th>
+							<th>Hour</th>
+							<th>Delay Days</th>
+						</tr>
+					</thead>
+					<tbody id="cuerpoTabla"></tbody>
+				</table>
+			</div>
+
+			<!-- Export Button -->
+			<button id="btnExportarExcel" style="margin-top: 10px;">📥 Export to Excel</button>
+		</div>
+	</div>
+	<script src="js/scripts.js" defer></script>
+</body>
+
+</html>
