@@ -116,15 +116,43 @@ tr:hover {
     padding: 15px;
   }
 
+  h2,
+  h3 {
+    font-size: 1.3rem;
+  }
+
+  label {
+    font-size: 0.95rem;
+  }
+
   input,
-  button {
+  button,
+  select {
+    width: 100%;
+    font-size: 1rem;
     padding: 10px;
   }
 
+  .table-responsive {
+    overflow-x: auto;
+  }
+
   table {
-    min-width: 700px;
+    min-width: 650px;
+    font-size: 0.85rem;
+  }
+
+  th,
+  td {
+    padding: 10px;
+  }
+
+  .btn-save,
+  #btnExportarExcel {
+    font-size: 1rem;
   }
 }
+
 #contadorResultados {
   margin-top: 15px;
   font-weight: bold;
@@ -166,4 +194,90 @@ select#filtroEstado {
 
 .fila-cancelado {
   background-color: #f8d7da; /* rojo claro */
+}
+
+.pagination {
+  display: inline-flex; /* No ocupe todo el ancho */
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 25px;
+  padding: 10px 20px 10px 10px;
+  width: auto;
+}
+
+.pagination button {
+  padding: 4px 10px;
+  font-size: 13px;
+  min-width: auto;
+  max-width: 120px;
+  width: auto;
+  white-space: nowrap;
+  border: none;
+  background-color: #e0e7ff;
+  color: #1e3a8a;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pagination button.active {
+  background-color: #1e3a8a;
+  color: white;
+}
+
+.pagination button:hover {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: default;
+}
+
+.calendar-wrapper {
+  position: relative;
+}
+
+.calendar-wrapper input[type="text"] {
+  padding-right: 2.5rem; /* espacio para el emoji */
+  height: 38px;
+  font-size: 14px;
+}
+
+.calendar-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 18px;
+  color: #555;
+}
+.calendar-wrapper {
+  position: relative;
+}
+
+.calendar-wrapper input[type="text"] {
+  padding-right: 2.5rem; /* espacio para el emoji */
+  height: 38px;
+  font-size: 14px;
+}
+
+.calendar-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 18px;
+  color: #555;
+}
+#btnBuscarFechas {
+  display: block;
+  margin: 20px auto 0;
+  padding: 6px 20px;
+  font-size: 0.9rem;
 }

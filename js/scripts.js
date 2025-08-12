@@ -1,5 +1,7 @@
 // Variable global para guardar los datos actuales
 let datosGlobales = [];
+let paginaActual = 1;
+const registrosPorPagina = 20;
 
 // Función para formatear datos para la tabla
 function formatearDatosParaTabla(datos) {
@@ -9,7 +11,7 @@ function formatearDatosParaTabla(datos) {
       etaRequerida: item.requiredETA || "N/A",
       estado: item.estado || "N/A",
       ubicacion: item.ubicacion || "N/A",
-      fechaLlegada: item.arrivalDate || "N/A",
+      fechaLlegada: item.date || "N/A",
       fecha: item.date || "N/A",
       hora: item.hour || "N/A",
       diasRetraso:
@@ -20,9 +22,9 @@ function formatearDatosParaTabla(datos) {
 
 // Función para buscar por ID
 async function buscarTracking() {
-  const trackingIdInput = document.getElementById("trackingId").value.trim();
+  const trackingId = document.getElementById("trackingId").value.trim();
 
-  if (!trackingIdInput) {
+  if (!trackingId) {
     alert("Por favor ingresa uno o más IDs de tracking (separados por coma)");
     return;
   }
@@ -110,7 +112,7 @@ function poblarFiltroEstados(datos) {
   const estadosUnicos = [...new Set(datos.map((item) => item.estado))];
 
   // Limpiar y volver a llenar
-  select.innerHTML = '<option value="all">Todos</option>';
+  select.innerHTML = '<option value="all">All</option>';
 
   estadosUnicos.forEach((estado) => {
     const option = document.createElement("option");
@@ -122,19 +124,29 @@ function poblarFiltroEstados(datos) {
 
 // Función que muestra los datos dados (aplica filtro y contador)
 function mostrarDatos(datos) {
+  datosGlobales = datos; // guardar referencia global por si es útil
   const filtroElem = document.getElementById("filtroEstado");
   const filtro = filtroElem ? filtroElem.value : "all";
 
-  let datosFiltrados = datos;
-
   if (filtro !== "all") {
     datosFiltrados = datos.filter((d) => d.estado === filtro);
+  } else {
+    datosFiltrados = datos;
   }
+
+  // Resetear a la primera página si se filtra
+  if (paginaActual > Math.ceil(datosFiltrados.length / registrosPorPagina)) {
+    paginaActual = 1;
+  }
+
+  const inicio = (paginaActual - 1) * registrosPorPagina;
+  const fin = inicio + registrosPorPagina;
+  const datosPagina = datosFiltrados.slice(inicio, fin);
 
   const cuerpoTabla = document.getElementById("cuerpoTabla");
   cuerpoTabla.innerHTML = "";
 
-  const datosFormateados = formatearDatosParaTabla(datosFiltrados);
+  const datosFormateados = formatearDatosParaTabla(datosPagina);
 
   datosFormateados.forEach((item) => {
     const fila = document.createElement("tr");
@@ -152,18 +164,56 @@ function mostrarDatos(datos) {
   });
 
   const tabla = document.getElementById("tablaResultados");
-  if (tabla)
+  if (tabla) {
     tabla.style.display = datosFormateados.length > 0 ? "table" : "none";
+  }
 
   const contador = document.getElementById("contadorResultados");
   if (contador) {
-    if (datosFormateados.length > 0) {
-      contador.textContent = `Resultados: ${datosFormateados.length}`;
+    if (datosFiltrados.length > 0) {
+      contador.textContent = `Results: ${datosFiltrados.length}`;
       contador.style.display = "block";
     } else {
       contador.style.display = "none";
     }
   }
+
+  crearPaginacion();
+}
+
+function crearPaginacion() {
+  const totalPaginas = Math.ceil(datosFiltrados.length / registrosPorPagina);
+  const contenedor = document.getElementById("paginacion");
+  contenedor.innerHTML = "";
+
+  // Botón "Anterior"
+  const btnAnterior = document.createElement("button");
+  btnAnterior.textContent = "« Previous";
+  btnAnterior.disabled = paginaActual === 1;
+  btnAnterior.addEventListener("click", () => {
+    if (paginaActual > 1) {
+      paginaActual--;
+      mostrarDatos(datosGlobales);
+    }
+  });
+  contenedor.appendChild(btnAnterior);
+
+  // Texto "Página X de Y"
+  const infoPagina = document.createElement("span");
+  infoPagina.textContent = ` Página ${paginaActual} de ${totalPaginas} `;
+  contenedor.appendChild(infoPagina);
+
+  // Botón "Siguiente"
+  const btnSiguiente = document.createElement("button");
+  btnSiguiente.textContent = "Next »";
+  btnSiguiente.disabled = paginaActual === totalPaginas;
+  btnSiguiente.addEventListener("click", () => {
+    if (paginaActual < totalPaginas) {
+      paginaActual++;
+      mostrarDatos(datosGlobales);
+    }
+  });
+  contenedor.appendChild(btnSiguiente);
 }
 
 // Función para limpiar tabla y contador
@@ -233,4 +283,15 @@ document.addEventListener("DOMContentLoaded", function () {
   if (btnBuscarFechas) {
     btnBuscarFechas.addEventListener("click", buscarPorFecha);
   }
+});
+document.addEventListener("DOMContentLoaded", function () {
+  flatpickr("#startDate", {
+    dateFormat: "Y-m-d",
+    locale: "en",
+  });
+
+  flatpickr("#endDate", {
+    dateFormat: "Y-m-d",
+    locale: "en",
+  });
 });
