@@ -79,11 +79,15 @@ async function buscarPorFecha() {
     }
 
     const allData = await response.json();
-
+    
     // Convertir las fechas a objetos Date para comparación
     const startDate = new Date(fechaInicio);
     const endDate = new Date(fechaFin);
-    const data = allData.filter((item) => new Date(item.date) >= startDate && new Date(item.date) <= endDate);
+    const data = allData.filter((item) => {
+      const [day, month, year] = item.date.split("-").map(Number);
+      const itemDate = new Date(year, month - 1, day); // Meses en JS son 0-indexados
+      return itemDate >= startDate && itemDate <= endDate;
+    });
 
     if (data.length > 0) {
       llenarTabla(data);
