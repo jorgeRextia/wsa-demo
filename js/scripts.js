@@ -1,28 +1,38 @@
-// Variable global para guardar los datos actuales
+// ================== Estado global ==================
 let datosGlobales = [];
+let datosFiltrados = [];
 let paginaActual = 1;
 const registrosPorPagina = 20;
 
-// Función para formatear datos para la tabla
+// ================== Utilidades ==================
 function formatearDatosParaTabla(datos) {
-  return datos.map((item) => {
-    return {
-      id: item.id || "N/A",
-      etaRequerida: item.requiredETA || "N/A",
-      estado: item.estado || "N/A",
-      ubicacion: item.ubicacion || "N/A",
-      fechaLlegada: item.date || "N/A",
-      fecha: item.date || "N/A",
-      hora: item.hour || "N/A",
-      diasRetraso:
-        item.actualAgingDays !== undefined ? item.actualAgingDays : "0",
-    };
-  });
+  return datos.map((item) => ({
+    id: item.id || "N/A",
+    etaRequerida: item.requiredETA || "N/A",
+    estado: item.estado || "N/A",
+    ubicacion: item.ubicacion || "N/A",
+    fechaLlegada: item.date || "N/A",
+    fecha: item.date || "N/A",
+    hora: item.hour || "N/A",
+    diasRetraso:
+      item.actualAgingDays !== undefined ? item.actualAgingDays : "0",
+  }));
 }
 
-// Función para buscar por ID
+function getEl(id) {
+  return document.getElementById(id);
+}
+
+function mostrarContenedorResultados(mostrar) {
+  const cont = getEl("tablaResultados");
+  if (!cont) return;
+  // Mejor usar el atributo 'hidden' para evitar flashes
+  cont.hidden = !mostrar;
+}
+
+// ================== Búsquedas ==================
 async function buscarTracking() {
-  const trackingId = document.getElementById("trackingId").value.trim();
+  const trackingId = getEl("trackingId").value.trim();
 
   if (!trackingId) {
     alert("Por favor ingresa uno o más IDs de tracking (separados por coma)");
@@ -31,7 +41,7 @@ async function buscarTracking() {
 
   // Dividir los IDs por coma y eliminar espacios en blanco
   // Convertir a mayúsculas para estandarizar
-  const trackingIds = trackingIdInput.split(",").map((id) => id.trim().toUpperCase());
+  const trackingIds = trackingId.split(",").map((id) => id.trim().toUpperCase());
 
   try {
     const response = await fetch("datos.json");
@@ -62,8 +72,8 @@ async function buscarTracking() {
 
 // Función para buscar por fechas
 async function buscarPorFecha() {
-  const fechaInicio = document.getElementById("startDate").value;
-  const fechaFin = document.getElementById("endDate").value;
+  const fechaInicio = getEl("startDate").value;
+  const fechaFin = getEl("endDate").value;
 
   if (!fechaInicio || !fechaFin) {
     alert("Por favor ingresa ambas fechas");
@@ -73,10 +83,7 @@ async function buscarPorFecha() {
   try {
     const response = await fetch("datos.json");
 
-    if (!response.ok) {
-      alert("No se pudo cargar el archivo de datos");
-      return;
-    }
+    if (!response.ok) throw new Error("Respuesta no OK del servidor");
 
     const allData = await response.json();
     
@@ -101,23 +108,21 @@ async function buscarPorFecha() {
   }
 }
 
-// Función para llenar la tabla y guardar datos globales
+// ================== Render/Tabla ==================
 function llenarTabla(datos) {
-  datosGlobales = datos;
-  poblarFiltroEstados(datosGlobales); // 👈 generar opciones dinámicamente
+  datosGlobales = Array.isArray(datos) ? datos : [];
+  poblarFiltroEstados(datosGlobales);
+  paginaActual = 1; // resetea al mostrar nuevos datos
   mostrarDatos(datosGlobales);
 }
 
-// Función para llenar dinámicamente el filtro de estado
 function poblarFiltroEstados(datos) {
-  const select = document.getElementById("filtroEstado");
+  const select = getEl("filtroEstado");
   if (!select) return;
 
-  const estadosUnicos = [...new Set(datos.map((item) => item.estado))];
+  const estadosUnicos = [...new Set(datos.map((item) => item.estado || "N/A"))];
 
-  // Limpiar y volver a llenar
   select.innerHTML = '<option value="all">All</option>';
-
   estadosUnicos.forEach((estado) => {
     const option = document.createElement("option");
     option.value = estado;
@@ -126,33 +131,32 @@ function poblarFiltroEstados(datos) {
   });
 }
 
-// Función que muestra los datos dados (aplica filtro y contador)
 function mostrarDatos(datos) {
-  datosGlobales = datos; // guardar referencia global por si es útil
-  const filtroElem = document.getElementById("filtroEstado");
+  const filtroElem = getEl("filtroEstado");
   const filtro = filtroElem ? filtroElem.value : "all";
 
-  if (filtro !== "all") {
-    datosFiltrados = datos.filter((d) => d.estado === filtro);
-  } else {
-    datosFiltrados = datos;
-  }
+  datosFiltrados =
+    filtro !== "all"
+      ? datos.filter((d) => (d.estado || "N/A") === filtro)
+      : datos;
 
-  // Resetear a la primera página si se filtra
-  if (paginaActual > Math.ceil(datosFiltrados.length / registrosPorPagina)) {
-    paginaActual = 1;
-  }
+  // Asegura página válida
+  const totalPaginas = Math.max(
+    1,
+    Math.ceil(datosFiltrados.length / registrosPorPagina)
+  );
+  if (paginaActual > totalPaginas) paginaActual = 1;
 
   const inicio = (paginaActual - 1) * registrosPorPagina;
   const fin = inicio + registrosPorPagina;
   const datosPagina = datosFiltrados.slice(inicio, fin);
 
-  const cuerpoTabla = document.getElementById("cuerpoTabla");
+  const cuerpoTabla = getEl("cuerpoTabla");
+  if (!cuerpoTabla) return;
   cuerpoTabla.innerHTML = "";
 
   const datosFormateados = formatearDatosParaTabla(datosPagina);
-
-  datosFormateados.forEach((item) => {
+  for (const item of datosFormateados) {
     const fila = document.createElement("tr");
     fila.innerHTML = `
       <td>${item.id}</td>
@@ -165,14 +169,13 @@ function mostrarDatos(datos) {
       <td>${item.diasRetraso}</td>
     `;
     cuerpoTabla.appendChild(fila);
-  });
-
-  const tabla = document.getElementById("tablaResultados");
-  if (tabla) {
-    tabla.style.display = datosFormateados.length > 0 ? "table" : "none";
   }
 
-  const contador = document.getElementById("contadorResultados");
+  // Mostrar/ocultar contenedor correctamente (es un DIV, no una tabla)
+  mostrarContenedorResultados(datosFormateados.length > 0);
+
+  // Contador de resultados
+  const contador = getEl("contadorResultados");
   if (contador) {
     if (datosFiltrados.length > 0) {
       contador.textContent = `Results: ${datosFiltrados.length}`;
@@ -186,11 +189,17 @@ function mostrarDatos(datos) {
 }
 
 function crearPaginacion() {
-  const totalPaginas = Math.ceil(datosFiltrados.length / registrosPorPagina);
-  const contenedor = document.getElementById("paginacion");
+  const contenedor = getEl("paginacion");
+  if (!contenedor) return;
+
   contenedor.innerHTML = "";
 
-  // Botón "Anterior"
+  const totalPaginas = Math.max(
+    1,
+    Math.ceil(datosFiltrados.length / registrosPorPagina)
+  );
+
+  // « Previous
   const btnAnterior = document.createElement("button");
   btnAnterior.textContent = "« Previous";
   btnAnterior.disabled = paginaActual === 1;
@@ -202,15 +211,15 @@ function crearPaginacion() {
   });
   contenedor.appendChild(btnAnterior);
 
-  // Texto "Página X de Y"
+  // Info "Página X de Y"
   const infoPagina = document.createElement("span");
   infoPagina.textContent = ` Página ${paginaActual} de ${totalPaginas} `;
   contenedor.appendChild(infoPagina);
 
-  // Botón "Siguiente"
+  // Next »
   const btnSiguiente = document.createElement("button");
   btnSiguiente.textContent = "Next »";
-  btnSiguiente.disabled = paginaActual === totalPaginas;
+  btnSiguiente.disabled = paginaActual >= totalPaginas;
   btnSiguiente.addEventListener("click", () => {
     if (paginaActual < totalPaginas) {
       paginaActual++;
@@ -220,82 +229,84 @@ function crearPaginacion() {
   contenedor.appendChild(btnSiguiente);
 }
 
-// Función para limpiar tabla y contador
 function limpiarTablaYContador() {
-  document.getElementById("cuerpoTabla").innerHTML = "";
-  document.getElementById("tablaResultados").style.display = "none";
-  const contador = document.getElementById("contadorResultados");
+  const cuerpo = getEl("cuerpoTabla");
+  if (cuerpo) cuerpo.innerHTML = "";
+
+  mostrarContenedorResultados(false);
+
+  const contador = getEl("contadorResultados");
   if (contador) contador.style.display = "none";
 }
 
-// Exportar a Excel con ajuste automático de ancho de columnas
+// ================== Exportar a Excel ==================
 function exportarExcel() {
-  const tabla = document.getElementById("tablaResultados");
-  if (!tabla) {
+  const tablaEl = document.querySelector("#tablaResultados table"); // ← usa la <table> real
+  if (!tablaEl) {
     alert("No se encontró la tabla para exportar.");
     return;
   }
 
-  const wb = XLSX.utils.table_to_book(tabla, { sheet: "Datos" });
+  const wb = XLSX.utils.table_to_book(tablaEl, { sheet: "Datos" });
   const ws = wb.Sheets["Datos"];
 
-  // Ajustar ancho de columnas automáticamente
+  // Ajuste de anchos
   const range = XLSX.utils.decode_range(ws["!ref"]);
   const colWidths = [];
 
   for (let C = range.s.c; C <= range.e.c; ++C) {
-    let maxWidth = 10; // Ancho mínimo
+    let maxWidth = 10;
     for (let R = range.s.r; R <= range.e.r; ++R) {
-      const cellAddress = { c: C, r: R };
-      const cellRef = XLSX.utils.encode_cell(cellAddress);
+      const cellRef = XLSX.utils.encode_cell({ c: C, r: R });
       const cell = ws[cellRef];
       if (cell && cell.v != null) {
         const cellValue = String(cell.v);
-        maxWidth = Math.max(maxWidth, cellValue.length + 2); // +2 de margen
+        maxWidth = Math.max(maxWidth, cellValue.length + 2);
       }
     }
     colWidths.push({ wch: maxWidth });
   }
-
   ws["!cols"] = colWidths;
 
   XLSX.writeFile(wb, "UPS Canada File.xlsx");
 }
 
-// Al cargar el DOM
+// ================== Init ==================
 document.addEventListener("DOMContentLoaded", function () {
-  limpiarTablaYContador();
+  // Si en el HTML añadiste: <div id="tablaResultados" hidden> no habrá parpadeo.
+  // Aun así, por seguridad, oculta al iniciar:
+  mostrarContenedorResultados(false);
 
-  const botonExportar = document.getElementById("btnExportarExcel");
-  if (botonExportar) {
-    botonExportar.addEventListener("click", exportarExcel);
-  }
+  const botonExportar = getEl("btnExportarExcel");
+  if (botonExportar) botonExportar.addEventListener("click", exportarExcel);
 
-  const filtroEstado = document.getElementById("filtroEstado");
+  const filtroEstado = getEl("filtroEstado");
   if (filtroEstado) {
     filtroEstado.addEventListener("change", () => {
+      paginaActual = 1;
       mostrarDatos(datosGlobales);
     });
   }
 
-  const btnBuscarID = document.getElementById("btnBuscarID");
-  if (btnBuscarID) {
-    btnBuscarID.addEventListener("click", buscarTracking);
-  }
+  const btnBuscarID = getEl("btnBuscarID");
+  if (btnBuscarID) btnBuscarID.addEventListener("click", buscarTracking);
 
-  const btnBuscarFechas = document.getElementById("btnBuscarFechas");
-  if (btnBuscarFechas) {
+  const btnBuscarFechas = getEl("btnBuscarFechas");
+  if (btnBuscarFechas)
     btnBuscarFechas.addEventListener("click", buscarPorFecha);
-  }
 });
-document.addEventListener("DOMContentLoaded", function () {
-  flatpickr("#startDate", {
-    dateFormat: "Y-m-d",
-    locale: "en",
-  });
 
-  flatpickr("#endDate", {
+// Flatpickr
+document.addEventListener("DOMContentLoaded", function () {
+  // Fuerza inglés globalmente
+  flatpickr.localize(flatpickr.l10ns.en);
+
+  const opcionesFecha = {
     dateFormat: "Y-m-d",
-    locale: "en",
-  });
+    locale: flatpickr.l10ns.en, // fuerza textos (meses, días) en inglés
+    disableMobile: true, // evita picker nativo de iOS/Android
+  };
+
+  flatpickr("#startDate", opcionesFecha);
+  flatpickr("#endDate", opcionesFecha);
 });

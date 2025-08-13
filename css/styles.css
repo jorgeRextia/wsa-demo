@@ -1,3 +1,6 @@
+style.css
+
+/* Base */
 body {
   font-family: Arial, sans-serif;
   background-color: #f4f6f8;
@@ -29,22 +32,45 @@ label {
   margin-bottom: 8px;
 }
 
-input,
-button {
+/* ❗ No forces 100% a todos los botones */
+input.form-control {
   width: 100%;
-  padding: 12px;
-  margin-top: 5px;
-  margin-bottom: 20px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  box-sizing: border-box;
+}
+button {
+  width: auto;
+} /* por defecto */
+.btn.w-100 {
+  width: 100%;
+} /* úsalo solo cuando quieras full width */
+
+/* === Normaliza botones: mismo font-size y altura que inputs === */
+button,
+.btn {
+  font-size: 16px !important; /* mismo tamaño de letra en todos los botones */
+  margin: 0; /* evita desplazamientos verticales */
 }
 
+/* Altura pareja con inputs (alinea Search con el input) */
+.form-control,
+.btn {
+  height: 44px; /* ajusta si prefieres 40/42 */
+  line-height: 1.25;
+}
+
+/* Si usas .input-group para el buscador: bordes alineados */
+.input-group .btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* Estilo base de button "personal" (no pisa .btn de Bootstrap gracias a la cascada) */
 button {
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  box-sizing: border-box;
   background-color: #00529b;
   color: white;
-  border: none;
   cursor: pointer;
   transition: background-color 0.3s;
 }
@@ -59,12 +85,12 @@ button:hover {
   border-left: 4px solid #00529b;
   border-radius: 4px;
   margin-top: 20px;
-  display: none;
 }
 
-.tabla-container {
+/* ---------- Tabla ---------- */
+
+.table-container {
   margin-top: 30px;
-  display: none;
 }
 
 .table-responsive {
@@ -72,12 +98,13 @@ button:hover {
   margin-bottom: 20px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  -webkit-overflow-scrolling: touch; /* iOS */
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: auto;
+  table-layout: fixed; /* ayuda a alinear columnas */
 }
 
 th,
@@ -86,13 +113,15 @@ td {
   text-align: left;
   border-bottom: 1px solid #ddd;
   vertical-align: middle;
+  word-break: break-word;
+  white-space: normal;
 }
 
+/* Cabecera: deja que Bootstrap maneje el color con .table-light */
 th {
-  background-color: #00529b;
-  color: white;
-  position: sticky;
-  top: 0;
+  background-color: #f8f9fa;
+  color: #212529;
+  position: static; /* evita descuadres con sticky */
 }
 
 tr:nth-child(even) {
@@ -110,94 +139,20 @@ tr:hover {
   margin-top: 15px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .container {
-    padding: 15px;
-  }
-
-  h2,
-  h3 {
-    font-size: 1.3rem;
-  }
-
-  label {
-    font-size: 0.95rem;
-  }
-
-  input,
-  button,
-  select {
-    width: 100%;
-    font-size: 1rem;
-    padding: 10px;
-  }
-
-  .table-responsive {
-    overflow-x: auto;
-  }
-
-  table {
-    min-width: 650px;
-    font-size: 0.85rem;
-  }
-
-  th,
-  td {
-    padding: 10px;
-  }
-
-  .btn-save,
-  #btnExportarExcel {
-    font-size: 1rem;
-  }
-}
-
-#contadorResultados {
-  margin-top: 15px;
-  font-weight: bold;
-  font-size: 18px;
-  color: #333;
-  background-color: #f0f8ff;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  display: inline-block;
-}
-
-/* Contenedor del filtro */
-.filtro-estado-container {
-  margin-top: 20px;
-  margin-bottom: 10px;
-}
-
-label[for="filtroEstado"] {
-  font-weight: bold;
-  margin-right: 10px;
-}
-
-select#filtroEstado {
-  padding: 6px 10px;
-  border-radius: 5px;
-  border: 1px solid #aaa;
-  font-size: 14px;
-}
-
-/* Colores según el estado */
+/* ---------- Estados ---------- */
 .fila-entregado {
-  background-color: #d4edda; /* verde claro */
-}
-
+  background-color: #d4edda;
+} /* verde claro */
 .fila-en-curso {
-  background-color: #fff3cd; /* amarillo claro */
-}
-
+  background-color: #fff3cd;
+} /* amarillo claro */
 .fila-cancelado {
-  background-color: #f8d7da; /* rojo claro */
-}
+  background-color: #f8d7da;
+} /* rojo claro */
 
+/* ---------- Paginación ---------- */
 .pagination {
-  display: inline-flex; /* No ocupe todo el ancho */
+  display: inline-flex;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 25px;
@@ -219,6 +174,7 @@ select#filtroEstado {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin: 0; /* elimina margen global de button */
 }
 
 .pagination button.active {
@@ -237,13 +193,14 @@ select#filtroEstado {
   cursor: default;
 }
 
+/* ---------- Calendario ---------- */
 .calendar-wrapper {
   position: relative;
 }
 
 .calendar-wrapper input[type="text"] {
   padding-right: 2.5rem; /* espacio para el emoji */
-  height: 38px;
+  height: 44px; /* misma altura que .btn */
   font-size: 14px;
 }
 
@@ -256,28 +213,81 @@ select#filtroEstado {
   font-size: 18px;
   color: #555;
 }
-.calendar-wrapper {
-  position: relative;
-}
 
-.calendar-wrapper input[type="text"] {
-  padding-right: 2.5rem; /* espacio para el emoji */
-  height: 38px;
-  font-size: 14px;
-}
-
-.calendar-icon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 18px;
-  color: #555;
-}
 #btnBuscarFechas {
-  display: block;
+  display: inline-block;
   margin: 20px auto 0;
   padding: 6px 20px;
-  font-size: 0.9rem;
+  font-size: 16px; /* consistente con .btn */
+  height: 44px; /* consistente con inputs */
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+
+  h2,
+  h3 {
+    font-size: 1.3rem;
+  }
+
+  label {
+    font-size: 0.95rem;
+  }
+
+  input.form-control,
+  select.form-select {
+    font-size: 1rem;
+    padding: 10px;
+  }
+
+  .table-responsive {
+    overflow-x: auto !important;
+  }
+
+  table {
+    font-size: 0.9rem;
+  }
+
+  th,
+  td {
+    padding: 10px;
+  }
+
+  #btnExportarExcel {
+    font-size: 16px;
+    height: 44px;
+  }
+}
+
+#contadorResultados {
+  margin-top: 15px;
+  font-weight: bold;
+  font-size: 18px;
+  color: #333;
+  background-color: #f0f8ff;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Filtro Estado */
+.filtro-estado-container {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+label[for="filtroEstado"] {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+select#filtroEstado {
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+  font-size: 14px;
 }
